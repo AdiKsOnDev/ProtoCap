@@ -45,11 +45,10 @@ def main():
 
     for executable in executables:
         run_executable(executable)
+        analyze_traffic(pcap_file, os.path.basename(executable))
 
     stop_event.wait()
     capture_thread.join()
-
-    analyze_traffic(pcap_file)
 
 if __name__ == "__main__":
     main()
