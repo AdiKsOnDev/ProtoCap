@@ -30,6 +30,11 @@ def main():
         print("Invalid directory.")
         return
 
+    executables = [os.path.join(directory, f) for f in os.listdir(directory)]
+    if not executables:
+        print("No executable files found in the directory.")
+        return
+
     interface = input("Enter the network interface to capture traffic (e.g., 'Ethernet' or 'Wi-Fi'): ")
 
     stop_event = threading.Event()
