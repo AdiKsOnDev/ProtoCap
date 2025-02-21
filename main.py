@@ -46,7 +46,7 @@ def main():
     for executable in executables:
         success = run_executable(executable)
 
-        if not success:
+        if success:
             analyze_traffic(pcap_file, os.path.basename(executable))
 
     stop_event.wait()
