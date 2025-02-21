@@ -15,8 +15,10 @@ def run_executable(executable_path):
     try:
         include_logger.debug(f"Running executable: {executable_path}")
         subprocess.run(executable_path, check=True)
+        return True
     except Exception as e:
         include_logger.error(f"Error running {executable_path}", exc_info=False)
+        return False
 
 def capture_traffic(interface, output_file, stop_event, timeout=10):
     """

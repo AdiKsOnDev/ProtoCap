@@ -44,8 +44,10 @@ def main():
     capture_thread.start()
 
     for executable in executables:
-        run_executable(executable)
-        analyze_traffic(pcap_file, os.path.basename(executable))
+        success = run_executable(executable)
+
+        if not success:
+            analyze_traffic(pcap_file, os.path.basename(executable))
 
     stop_event.wait()
     capture_thread.join()
