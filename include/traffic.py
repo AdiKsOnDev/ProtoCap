@@ -3,6 +3,8 @@ import pyshark
 import logging
 import subprocess
 
+from utils import write_packets_to_csv
+
 include_logger = logging.getLogger('include')
 
 def run_executable(executable_path):
