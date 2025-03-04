@@ -39,7 +39,7 @@ def main():
 
     stop_event = threading.Event()
 
-    pcap_file = "capture.pcap"
+    pcap_file = "./capture.pcap"
     capture_thread = threading.Thread(target=capture_traffic, args=(interface, pcap_file, stop_event, 10))
     capture_thread.start()
 
