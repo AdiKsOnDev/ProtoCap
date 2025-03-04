@@ -35,6 +35,7 @@ def capture_traffic(interface, output_file, stop_event, timeout=10):
     include_logger.debug(f"Starting network capture on interface {interface}...")
     capture = pyshark.LiveCapture(interface=interface, output_file=output_file)
     capture.sniff(timeout)
+    include_logger.debug(f"Stopped capture on interface {interface}")
     stop_event.set()
 
 def analyze_traffic(pcap_file, executable_name):
