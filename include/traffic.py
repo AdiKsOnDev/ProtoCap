@@ -1,4 +1,5 @@
 import csv
+import asyncio
 import pyshark
 import logging
 import subprocess
@@ -32,11 +33,17 @@ def capture_traffic(interface, output_file, stop_event, timeout=10):
         stop_event (threading.Event): An event to signal when the capture should stop.
         timeout (itn): Amount of time that the executable will be running for
     """
-    include_logger.debug(f"Starting network capture on interface {interface}...")
-    capture = pyshark.LiveCapture(interface=interface, output_file=output_file)
-    capture.sniff(timeout)
-    include_logger.debug(f"Stopped capture on interface {interface}")
-    stop_event.set()
+    def _capture():
+        include_logger.debug(f"Starting network capture on interface {interface}...")
+        capture = pyshark.LiveCapture(interface=interface, output_file=output_file)
+        capture.sniff(timeout)
+        include_logger.debug(f"Stopped capture on interface {interface}")
+        stop_event.set()
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(_capture())
+    loop.close()
 
 def analyze_traffic(pcap_file, executable_name):
     """
