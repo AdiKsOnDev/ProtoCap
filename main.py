@@ -40,17 +40,18 @@ def main():
     stop_event = threading.Event()
 
     pcap_file = "./capture.pcap"
-    capture_thread = threading.Thread(target=capture_traffic, args=(interface, pcap_file, stop_event, 10))
-    capture_thread.start()
 
     for executable in executables:
+        capture_thread = threading.Thread(target=capture_traffic, args=(interface, pcap_file, stop_event, 10))
+        capture_thread.start()
         success = run_executable(executable)
+
+        stop_event.wait()
+        capture_thread.join()
 
         if success:
             analyze_traffic(pcap_file, os.path.basename(executable))
 
-    stop_event.wait()
-    capture_thread.join()
 
 if __name__ == "__main__":
     main()
