@@ -3,7 +3,7 @@ import pyshark
 import logging
 import subprocess
 
-from utils import write_packets_to_csv
+from include.utils import write_packets_to_csv
 
 include_logger = logging.getLogger('include')
 
