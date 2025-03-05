@@ -1,8 +1,10 @@
+import os
 import csv
-import asyncio
-import pyshark
+import time
 import logging
+import pyshark
 import subprocess
+from scapy.all import AsyncSniffer, wrpcap
 
 from include.utils import write_packets_to_csv
 
@@ -17,33 +19,48 @@ def run_executable(executable_path):
     """
     try:
         include_logger.debug(f"Running executable: {executable_path}")
-        subprocess.run(executable_path, check=True)
-        return True
+        process = subprocess.Popen(executable_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        return process
     except Exception as e:
-        include_logger.error(f"Error running {executable_path}", exc_info=False)
+        include_logger.error(f"{e} while running {executable_path}", exc_info=False)
         return False
 
-def capture_traffic(interface, output_file, stop_event, timeout=10):
+
+def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
     """
-    Capture network traffic on a specified interface and save it to a file.
+    Capture network traffic save it to a file in a specified directory.
 
     Args:
-        interface (str): The network interface to capture traffic on (e.g., 'Ethernet').
-        output_file (str): The file path to save the captured traffic (e.g., 'capture.pcap').
-        stop_event (threading.Event): An event to signal when the capture should stop.
+        executable_path (str): Path to the executable that has to be ran
+        process (subprocess): Process returned by function run_executable()
+        output_dir (str): The directory path to save the captured traffic
         timeout (itn): Amount of time that the executable will be running for
     """
-    def _capture():
-        include_logger.debug(f"Starting network capture on interface {interface}...")
-        capture = pyshark.LiveCapture(interface=interface, output_file=output_file)
-        capture.sniff(timeout)
-        include_logger.debug(f"Stopped capture on interface {interface}")
-        stop_event.set()
+    sniffer = AsyncSniffer()
+    sniffer.start()
+    start_time = time.time()
+    logging.debug(f"Started sniffing at {int(start_time)}")
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(_capture())
-    loop.close()
+    process = run_executable(executable_path)
+
+    if process == False:
+        return False
+
+    try:
+        process.wait(timeout)
+    except subprocess.TimeoutExpired:
+        process.kill()
+
+    packets = sniffer.stop()
+    runtime = time.time() - start_time
+    logging.debug(f"Finished sniffing. Runtime is {int(runtime)}")
+
+    exe_name = os.path.basename(executable_path)
+    pcap_path = os.path.join(output_dir, f"{exe_name}_{int(start_time)}.pcap")
+    wrpcap(pcap_path, packets)
+
+    include_logger.info(f"Captured {len(packets)} packets for {exe_name} in {runtime:.2f} seconds. Saved to {pcap_path}")
 
 def analyze_traffic(pcap_file, executable_name):
     """
