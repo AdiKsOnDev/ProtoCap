@@ -24,7 +24,7 @@ def run_executable(executable_path):
         return process
     except Exception as e:
         include_logger.error(f"{e} while running {executable_path}", exc_info=False)
-        return False
+        return None
 
 
 def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
@@ -38,7 +38,7 @@ def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
         timeout (itn): Amount of time that the executable will be running for
 
     Return:
-        (str): Path to the pcap file in case of success, False otherwise
+        (str): Path to the pcap file in case of success, None otherwise
     """
     sniffer = AsyncSniffer()
     sniffer.start()
@@ -47,8 +47,8 @@ def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
 
     process = run_executable(executable_path)
 
-    if process == False:
-        return False
+    if process == None:
+        return None
 
     try:
         process.wait(timeout)
