@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+import argparse
 import threading
 
 from include.traffic import run_executable, capture_traffic, analyze_traffic
@@ -25,32 +26,24 @@ def main():
     """
     Main function to run executables, capture network traffic, and analyze protocols.
     """
-    directory = input("Enter the directory containing executable files: ")
-    if not os.path.isdir(directory):
-        print("Invalid directory.")
-        return
+    parser = argparse.ArgumentParser(description="Network Traffic Collector for Executables")
+    parser.add_argument("target_dir", help="Directory containing executables")
+    parser.add_argument("-o", "--output", default="pcaps", help="PCAP output directory")
+    parser.add_argument("-t", "--timeout", type=int, default=10, help="Execution timeout (seconds)")
+    args = parser.parse_args()
 
-    executables = [os.path.join(directory, f) for f in os.listdir(directory)]
-    if not executables:
-        print("No executable files found in the directory.")
-        return
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output, exist_ok=True)
 
-    interface = input("Enter the network interface to capture traffic (e.g., 'Ethernet' or 'Wi-Fi'): ")
+    # Iterate through executables in the target directory
+    for exe in os.listdir(args.target_dir):
+        exe_path = os.path.join(args.target_dir, exe)
+        print(f"Analyzing {exe}...")
+        pcap_path = capture_traffic(exe_path, args.output, args.timeout)
 
-    stop_event = threading.Event()
+        if pcap_path is not None:
+            analyze_traffic(pcap_path, os.path.basename(exe))
 
-    pcap_file = "./capture.pcap"
-    capture_thread = threading.Thread(target=capture_traffic, args=(interface, pcap_file, stop_event, 10))
-    capture_thread.start()
-
-    for executable in executables:
-        success = run_executable(executable)
-
-        if success:
-            analyze_traffic(pcap_file, os.path.basename(executable))
-
-    stop_event.wait()
-    capture_thread.join()
 
 if __name__ == "__main__":
     main()
