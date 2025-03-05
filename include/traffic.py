@@ -36,6 +36,9 @@ def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
         process (subprocess): Process returned by function run_executable()
         output_dir (str): The directory path to save the captured traffic
         timeout (itn): Amount of time that the executable will be running for
+
+    Return:
+        (str): Path to the pcap file in case of success, False otherwise
     """
     sniffer = AsyncSniffer()
     sniffer.start()
@@ -61,6 +64,7 @@ def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
     wrpcap(pcap_path, packets)
 
     include_logger.info(f"Captured {len(packets)} packets for {exe_name} in {runtime:.2f} seconds. Saved to {pcap_path}")
+    return pcap_path
 
 def analyze_traffic(pcap_file, executable_name):
     """
