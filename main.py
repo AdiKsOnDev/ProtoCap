@@ -14,7 +14,7 @@ LOG_LEVEL = logging.DEBUG
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(name)s - %(levelname)s - %(filename)s - %(funcName)s - %(message)s'
+    format="%(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
 )
 main_logger.setLevel(
     LOG_LEVEL
