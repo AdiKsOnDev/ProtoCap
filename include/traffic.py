@@ -60,6 +60,8 @@ def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
     logging.debug(f"Finished sniffing. Runtime is {int(runtime)}")
 
     exe_name = os.path.basename(executable_path)
+    logging.debug(f"Output Directory is {output_dir}, file name is {exe_name}_{int(start_time)}.pcap")
+
     pcap_path = os.path.join(output_dir, f"{exe_name}_{int(start_time)}.pcap")
     wrpcap(pcap_path, packets)
 
