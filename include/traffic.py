@@ -27,13 +27,12 @@ def run_executable(executable_path):
         return None
 
 
-def capture_traffic(executable_path, process, output_dir="./data/", timeout=10):
+def capture_traffic(executable_path, output_dir="./data/", timeout=10):
     """
     Capture network traffic save it to a file in a specified directory.
 
     Args:
         executable_path (str): Path to the executable that has to be ran
-        process (subprocess): Process returned by function run_executable()
         output_dir (str): The directory path to save the captured traffic
         timeout (itn): Amount of time that the executable will be running for
 
