@@ -19,21 +19,21 @@ jobs:
         with:
           fetch-depth: 0
 
-    - name: Generate Conventional Changelog
-      id: changelog
-      uses: TriPSs/conventional-changelog-action@v5
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        output-file: "CHANGELOG.md"
-        skip-version-file: true
-
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Generate Conventional Changelog
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: CHANGELOG.md
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: "CHANGELOG.md"
+          skip-version-file: true
+
+        - name: Publish GitHub Release
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: ${{ github.ref_name }}
+            name: Release ${{ github.ref_name }}
+            body: CHANGELOG.md
+            draft: false
+            prerelease: false
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
