@@ -26,8 +26,6 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         output-file: "CHANGELOG.md"
         skip-version-file: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
