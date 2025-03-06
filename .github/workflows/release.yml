@@ -21,19 +21,18 @@ jobs:
           fetch-depth: 0  # Ensures full commit history for changelog
 
       - name: Generate Release Notes
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@v5
+        id: release_notes
+        uses: mikepenz/release-changelog-builder-action@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-file: "CHANGELOG.md"
-          skip-version-file: true
+          configuration: ".github/release-config.json"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body_path: CHANGELOG.md
+          body: ${{ steps.release_notes.outputs.changelog }}
           draft: false
           prerelease: false
-
