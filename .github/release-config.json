@@ -1,0 +1,12 @@
+{
+  "categories": [
+    { "title": "🚀 Features", "labels": ["feat"] },
+    { "title": "🐛 Bug Fixes", "labels": ["fix"] },
+    { "title": "🛠 Refactoring", "labels": ["refactor"] },
+    { "title": "📝 Documentation", "labels": ["docs"] },
+    { "title": "🔧 Chores", "labels": ["chore"] },
+    { "title": "⚙️ Git & CI", "labels": ["git"] }
+  ],
+  "template": "## Changes\n\n${{CHANGELOG}}\n\n---\nGenerated automatically from commit messages."
+}
+
