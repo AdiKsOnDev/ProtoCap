@@ -35,7 +35,7 @@ def write_packets_to_csv(filename, packets, protocol, csv_writer):
             }
 
         csv_writer.writerow([
-            executable_name,
+            filename,
             protocol,
             packet.ip.src if hasattr(packet, 'ip') else 'N/A',
             packet.ip.dst if hasattr(packet, 'ip') else 'N/A',
