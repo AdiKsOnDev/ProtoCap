@@ -39,10 +39,11 @@ def write_packets_to_csv(filename, packets, protocol, csv_writer):
         else:
             return
 
-        csv_writer.writerow([
-            filename,
-            protocol,
-            packet.ip.src if hasattr(packet, 'ip') else 'N/A',
-            packet.ip.dst if hasattr(packet, 'ip') else 'N/A',
-            details
-        ])
+        row = [filename, protocol]
+        row.append(packet.ip.src if hasattr(packet, 'ip') else 'N/A')
+        row.append(packet.ip.dst if hasattr(packet, 'ip') else 'N/A')
+
+        for key, value in details.items():
+            row.append(value)
+
+        csv_writer.writerow(row)

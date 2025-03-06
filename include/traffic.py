@@ -97,15 +97,32 @@ def analyze_traffic(pcap_file, executable_name):
     include_logger.info(f"HTTP packets: {len(http_packets)}")
     include_logger.info(f"SSL/TLS packets: {len(ssl_packets)}")
 
-    with open('traffic_report.csv', 'a', newline='') as csvfile:
+    with open('DNS_report.csv', 'a', newline='') as csvfile:
         include_logger.debug("Writing report into a CSV")
         csv_writer = csv.writer(csvfile)
 
         # If the file is empty
         if csvfile.tell() == 0:
-            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Details'])
+            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Query Name', 'Response Flags', 'Time-to-Live'])
 
         write_packets_to_csv(executable_name, dns_packets, 'DNS', csv_writer)
-        write_packets_to_csv(executable_name, http_packets, 'HTTP', csv_writer)
-        write_packets_to_csv(executable_name, ssl_packets, 'SSL/TLS', csv_writer)
 
+    with open('HTTP_report.csv', 'a', newline='') as csvfile:
+        include_logger.debug("Writing report into a CSV")
+        csv_writer = csv.writer(csvfile)
+
+        # If the file is empty
+        if csvfile.tell() == 0:
+            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Hostname', 'Referrer', 'Cookie', 'User Agent', 'Content Type'])
+
+        write_packets_to_csv(executable_name, http_packets, 'HTTP', csv_writer)
+
+    with open('SSL/TLS_report.csv', 'a', newline='') as csvfile:
+        include_logger.debug("Writing report into a CSV")
+        csv_writer = csv.writer(csvfile)
+
+        # If the file is empty
+        if csvfile.tell() == 0:
+            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Server Name', 'SSL Version', 'Certificate Expiry'])
+
+        write_packets_to_csv(executable_name, ssl_packets, 'SSL/TLS', csv_writer)
