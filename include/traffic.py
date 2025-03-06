@@ -95,7 +95,7 @@ def analyze_traffic(pcap_file, executable_name):
 
     include_logger.info(f"DNS packets: {len(dns_packets)}")
     include_logger.info(f"HTTP packets: {len(http_packets)}")
-    include_logger.info(f"SSL/TLS packets: {len(ssl_packets)}")
+    include_logger.info(f"SSL_TLS packets: {len(ssl_packets)}")
 
     with open('DNS_report.csv', 'a', newline='') as csvfile:
         include_logger.debug("Writing report into a CSV")
