@@ -28,11 +28,16 @@ def write_packets_to_csv(filename, packets, protocol, csv_writer):
                 'Content Type': packet.http.content_type if hasattr(packet.http, 'content_type') else 'N/A'
             }
         elif protocol == 'SSL/TLS':
-            details = {
-                'Server Name': packet.ssl.server_name if hasattr(packet.ssl, 'server_name') else 'N/A',
-                'SSL Version': packet.ssl.version if hasattr(packet.ssl, 'version') else 'N/A',
-                'Certificate Expiry': packet.ssl.handshake_certificate_expiration if hasattr(packet.ssl, 'handshake_certificate_expiration') else 'N/A'
-            }
+            ssl_layer = getattr(packet, 'tls', getattr(packet, 'ssl', None))
+
+            if ssl_layer:
+                details = {
+                    'Server Name': ssl_layer.get_field_value('server_name') if hasattr(ssl_layer, 'server_name') else 'N/A',
+                    'SSL Version': ssl_layer.get_field_value('version') if hasattr(ssl_layer, 'version') else 'N/A',
+                    'Certificate Expiry': ssl_layer.get_field_value('handshake_certificate_expiration') if hasattr(ssl_layer, 'handshake_certificate_expiration') else 'N/A'
+                }
+        else:
+            return
 
         csv_writer.writerow([
             filename,
