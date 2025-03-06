@@ -24,8 +24,8 @@ def write_packets_to_csv(filename, packets, protocol, csv_writer):
                 'Hostname': packet.http.host if hasattr(packet.http, 'host') else 'N/A',
                 'Referrer': packet.http.referer if hasattr(packet.http, 'referer') else 'N/A',
                 'Cookie': packet.http.cookie if hasattr(packet.http, 'cookie') else 'N/A',
-                'User Agent': packet.http.user_agent if hasattr(packet.http, 'user_agent') else 'N/A',
-                'Content Type': packet.http.content_type if hasattr(packet.http, 'content_type') else 'N/A'
+                'User Agent': str(packet.http.user_agent).replace(';', '') if hasattr(packet.http, 'user_agent') else 'N/A',
+                'Content Type': str(packet.http.content_type).replace(';', '') if hasattr(packet.http, 'content_type') else 'N/A'
             }
         elif protocol == 'SSL/TLS':
             ssl_layer = getattr(packet, 'tls', getattr(packet, 'ssl', None))
