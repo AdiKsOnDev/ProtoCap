@@ -31,3 +31,5 @@ jobs:
           body: ${{ steps.generate-release-notes.outputs.release_notes }}
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
