@@ -3,33 +3,37 @@ name: Release
 on:
   push:
     tags:
-      - "v*.*.*"  # Triggers when a version tag like v1.0.0 is pushed
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  pull-requests: read
 
 jobs:
   release:
-    name: Create GitHub Release
+    name: Generate and Publish Release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for changelog generation
+          fetch-depth: 0  # Ensures full commit history for changelog
 
       - name: Generate Release Notes
-        id: release_notes
-        uses: mikepenz/release-changelog-builder-action@v4
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
         with:
-          configuration: ".github/release-config.json"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: "CHANGELOG.md"
+          skip-version-file: true
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body: ${{ steps.release_notes.outputs.changelog }}
+          body_path: CHANGELOG.md
           draft: false
           prerelease: false
 
