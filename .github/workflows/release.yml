@@ -9,7 +9,6 @@ permissions:
   contents: write  # Required to create releases and write to the repository
   pull-requests: read  # Required to read pull requests (if needed)
   issues: read  # Required to read issues (if needed)
-  metadata: read  # Required to read repository metadata
   actions: read  # Required to read workflow information
 
 jobs:
