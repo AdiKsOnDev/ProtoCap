@@ -3,37 +3,82 @@ name: Release Automation
 on:
   push:
     tags:
-      - 'v*'
-
-permissions:
-  contents: write
-  pull-requests: read
+      - 'v*'  # Triggers the workflow when a tag starting with 'v' is pushed (e.g., v1.0.0)
 
 jobs:
-  generate-release-notes:
+  create-release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Fetch all history for the repository to generate accurate release notes
 
-      - name: Generate Conventional Changelog
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-file: "CHANGELOG.md"
-          skip-version-file: true
+      - name: Set up GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh
 
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: CHANGELOG.md
-          draft: false
-          prerelease: false
+      - name: Log and categorize commits since the latest tag
+        id: log-commits
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "Latest tag: $latest_tag"
+
+          # Initialize arrays for each category
+          feat_commits=()
+          fix_commits=()
+          docs_commits=()
+          refactor_commits=()
+          chore_commits=()
+          other_commits=()
+
+          # Loop through commits since the latest tag
+          while read -r commit; do
+            if [[ "$commit" == "feat:"* ]]; then
+              feat_commits+=("$commit")
+            elif [[ "$commit" == "fix:"* ]]; then
+              fix_commits+=("$commit")
+            elif [[ "$commit" == "docs:"* ]]; then
+              docs_commits+=("$commit")
+            elif [[ "$commit" == "refactor:"* ]]; then
+              refactor_commits+=("$commit")
+            elif [[ "$commit" == "chore:"* ]]; then
+              chore_commits+=("$commit")
+            else
+              other_commits+=("$commit")
+            fi
+          done <<< "$(git log --oneline $latest_tag..HEAD)"
+
+          # Store categorized commits in a file
+          {
+            echo "## Features"
+            printf '%s\n' "${feat_commits[@]}"
+            echo ""
+            echo "## Bug Fixes"
+            printf '%s\n' "${fix_commits[@]}"
+            echo ""
+            echo "## Documentation"
+            printf '%s\n' "${docs_commits[@]}"
+            echo ""
+            echo "## Refactors"
+            printf '%s\n' "${refactor_commits[@]}"
+            echo ""
+            echo "## Chores"
+            printf '%s\n' "${chore_commits[@]}"
+            echo ""
+            echo "## Other Changes"
+            printf '%s\n' "${other_commits[@]}"
+          } > commits.txt
+
+      - name: Create release with categorized commits
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ github.ref_name }}"
+          repo="${{ github.repository }}"
+          release_body=$(cat commits.txt)
+          gh release create "$tag" \
+              --title="${repo#*/} $tag" \
+              --notes="$release_body"
