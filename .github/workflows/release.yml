@@ -42,15 +42,17 @@ jobs:
 
           # Loop through commits since the latest tag
           while read -r commit; do
-            if [[ "$commit" == "feat:"* ]]; then
+            message="${commit#* }"
+
+            if [[ "$message" == "feat:"* ]]; then
               feat_commits+=("$commit")
-            elif [[ "$commit" == "fix:"* ]]; then
+            elif [[ "$message" == "fix:"* ]]; then
               fix_commits+=("$commit")
-            elif [[ "$commit" == "docs:"* ]]; then
+            elif [[ "$message" == "docs:"* ]]; then
               docs_commits+=("$commit")
-            elif [[ "$commit" == "refactor:"* ]]; then
+            elif [[ "$message" == "refactor:"* ]]; then
               refactor_commits+=("$commit")
-            elif [[ "$commit" == "chore:"* ]]; then
+            elif [[ "$message" == "chore:"* ]]; then
               chore_commits+=("$commit")
             else
               other_commits+=("$commit")
