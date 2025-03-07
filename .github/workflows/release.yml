@@ -5,6 +5,13 @@ on:
     tags:
       - 'v*'  # Triggers the workflow when a tag starting with 'v' is pushed (e.g., v1.0.0)
 
+permissions:
+  contents: write  # Required to create releases and write to the repository
+  pull-requests: read  # Required to read pull requests (if needed)
+  issues: read  # Required to read issues (if needed)
+  metadata: read  # Required to read repository metadata
+  actions: read  # Required to read workflow information
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
