@@ -10,7 +10,7 @@ from include.utils import write_packets_to_csv
 
 main_logger = logging.getLogger('main')
 include_logger = logging.getLogger('include')
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 
 logging.basicConfig(
     level=logging.DEBUG,
