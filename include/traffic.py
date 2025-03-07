@@ -120,10 +120,20 @@ def analyze_traffic(pcap_file, executable_name):
 
     open_csv('DNS', ['Filename', 'Protocol', 'Source IP',
              'Destination IP', 'Query Name', 'Response Flags', 'Time-to-Live'], executable_name, dns_packets)
+
     open_csv('HTTP', ['Filename', 'Protocol', 'Source IP', 'Destination IP',
              'Hostname', 'Referrer', 'Cookie', 'User Agent', 'Content Type'], executable_name, http_packets)
+
     open_csv('SSL', ['Filename', 'Protocol', 'Source IP', 'Destination IP',
                      'Server Name', 'SSL Version', 'Certificate Expiry'], executable_name, ssl_packets)
+
+    open_csv('TCP', ['Destination Port', 'Packet Size', 'PUSH Bit Set', 
+                     'Out-of-Order Packets'], executable_name, tcp_packets)
+
+    open_csv('IP', ['Destination IP', 'IP Geo-location', 
+                    'IP Autonomous System Number'], executable_name, ip_packets)
+
+    open_csv('UDP', ['Ratio Sent/Received', 'Non-Existent Domain Responses'], executable_name, udp_packets)
 
 
 def open_csv(protocol, headers, executable_name, packets):
