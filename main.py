@@ -1,12 +1,9 @@
 import os
-import time
 import logging
 import argparse
-import threading
 from tqdm import tqdm
 
-from include.traffic import run_executable, capture_traffic, analyze_traffic
-from include.utils import write_packets_to_csv
+from include.traffic import capture_traffic, analyze_traffic
 
 main_logger = logging.getLogger('main')
 include_logger = logging.getLogger('include')
