@@ -10,6 +10,7 @@ from include.utils import write_packets_to_csv
 
 include_logger = logging.getLogger('include')
 
+
 def run_executable(executable_path):
     """
     Run an executable file.
@@ -19,11 +20,13 @@ def run_executable(executable_path):
     """
     try:
         include_logger.debug(f"Running executable: {executable_path}")
-        process = subprocess.Popen(executable_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        process = subprocess.Popen(
+            executable_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         return process
     except Exception as e:
-        include_logger.error(f"{e} while running {executable_path}", exc_info=False)
+        include_logger.error(f"{e} while running {
+                             executable_path}", exc_info=False)
         return None
 
 
@@ -59,13 +62,16 @@ def capture_traffic(executable_path, output_dir="./data/", timeout=10):
     logging.debug(f"Finished sniffing. Runtime is {int(runtime)}")
 
     exe_name = os.path.basename(executable_path)
-    logging.debug(f"Output Directory is {output_dir}, file name is {exe_name}_{int(start_time)}.pcap")
+    logging.debug(f"Output Directory is {output_dir}, file name is {
+                  exe_name}_{int(start_time)}.pcap")
 
     pcap_path = os.path.join(output_dir, f"{exe_name}_{int(start_time)}.pcap")
     wrpcap(pcap_path, packets)
 
-    include_logger.info(f"Captured {len(packets)} packets for {exe_name} in {runtime:.2f} seconds. Saved to {pcap_path}")
+    include_logger.info(f"Captured {len(packets)} packets for {exe_name} in {
+                        runtime:.2f} seconds. Saved to {pcap_path}")
     return pcap_path
+
 
 def analyze_traffic(pcap_file, executable_name):
     """
@@ -81,6 +87,9 @@ def analyze_traffic(pcap_file, executable_name):
     dns_packets = []
     http_packets = []
     ssl_packets = []
+    tcp_packets = []
+    ip_packets = []
+    udp_packets = []
 
     for packet in capture:
         if 'DNS' in packet:
@@ -89,40 +98,41 @@ def analyze_traffic(pcap_file, executable_name):
         if 'HTTP' in packet:
             include_logger.debug(f"HTTP packet found in packet {pcap_file}")
             http_packets.append(packet)
-        if 'SSL' in packet or 'TLS' in packet:
+        if 'SSL' in packet:
             include_logger.debug(f"SSL packet found in packet {pcap_file}")
             ssl_packets.append(packet)
+        if 'TCP' in packet:
+            include_logger.debug(f"TCP packet found in packet {pcap_file}")
+            tcp_packets.append(packet)
+        if 'IP' in packet:
+            include_logger.debug(f"IP packet found in packet {pcap_file}")
+            ip_packets.append(packet)
+        if 'UDP' in packet:
+            include_logger.debug(f"UDP packet found in packet {pcap_file}")
+            udp_packets.append(packet)
 
     include_logger.info(f"DNS packets: {len(dns_packets)}")
     include_logger.info(f"HTTP packets: {len(http_packets)}")
-    include_logger.info(f"SSL/TLS packets: {len(ssl_packets)}")
+    include_logger.info(f"SSL packets: {len(ssl_packets)}")
+    include_logger.info(f"TCP packets: {len(tcp_packets)}")
+    include_logger.info(f"IP packets: {len(ip_packets)}")
+    include_logger.info(f"UDP packets: {len(udp_packets)}")
 
-    with open('DNS_report.csv', 'a', newline='') as csvfile:
-        include_logger.debug("Writing report into a CSV")
+    open_csv('DNS', ['Filename', 'Protocol', 'Source IP',
+             'Destination IP', 'Query Name', 'Response Flags', 'Time-to-Live'], executable_name, dns_packets)
+    open_csv('HTTP', ['Filename', 'Protocol', 'Source IP', 'Destination IP',
+             'Hostname', 'Referrer', 'Cookie', 'User Agent', 'Content Type'], executable_name, http_packets)
+    open_csv('SSL', ['Filename', 'Protocol', 'Source IP', 'Destination IP',
+                     'Server Name', 'SSL Version', 'Certificate Expiry'], executable_name, ssl_packets)
+
+
+def open_csv(protocol, headers, executable_name, packets):
+    with open(f'{protocol}_report.csv', 'a', newline='') as csvfile:
+        include_logger.debug("Writing {protocol} report into a CSV")
         csv_writer = csv.writer(csvfile)
 
         # If the file is empty
         if csvfile.tell() == 0:
-            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Query Name', 'Response Flags', 'Time-to-Live'])
+            csv_writer.writerow(headers)
 
-        write_packets_to_csv(executable_name, dns_packets, 'DNS', csv_writer)
-
-    with open('HTTP_report.csv', 'a', newline='') as csvfile:
-        include_logger.debug("Writing report into a CSV")
-        csv_writer = csv.writer(csvfile)
-
-        # If the file is empty
-        if csvfile.tell() == 0:
-            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Hostname', 'Referrer', 'Cookie', 'User Agent', 'Content Type'])
-
-        write_packets_to_csv(executable_name, http_packets, 'HTTP', csv_writer)
-
-    with open('SSL_TLS_report.csv', 'a', newline='') as csvfile:
-        include_logger.debug("Writing report into a CSV")
-        csv_writer = csv.writer(csvfile)
-
-        # If the file is empty
-        if csvfile.tell() == 0:
-            csv_writer.writerow(['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Server Name', 'SSL Version', 'Certificate Expiry'])
-
-        write_packets_to_csv(executable_name, ssl_packets, 'SSL/TLS', csv_writer)
+        write_packets_to_csv(executable_name, packets, protocol, csv_writer)
