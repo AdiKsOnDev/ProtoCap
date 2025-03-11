@@ -84,56 +84,38 @@ def analyze_traffic(pcap_file, executable_name):
     include_logger.debug(f"Analyzing traffic from {pcap_file}...")
     capture = pyshark.FileCapture(pcap_file)
 
-    dns_packets = []
-    http_packets = []
-    ssl_packets = []
-    tcp_packets = []
-    ip_packets = []
-    udp_packets = []
+    packets = {
+        'DNS': [],
+        'HTTP': [],
+        'SSL': [],
+        'TCP': [],
+        'IP': [],
+        'UDP': []
+    }
 
     for packet in capture:
         if 'DNS' in packet:
-            include_logger.debug(f"DNS packet found in packet {pcap_file}")
-            dns_packets.append(packet)
+            packets['DNS'].append(packet)
         if 'HTTP' in packet:
-            include_logger.debug(f"HTTP packet found in packet {pcap_file}")
-            http_packets.append(packet)
-        if 'SSL' in packet:
-            include_logger.debug(f"SSL packet found in packet {pcap_file}")
-            ssl_packets.append(packet)
+            packets['HTTP'].append(packet)
+        if 'SSL' in packet or 'TLS' in packet:
+            packets['SSL'].append(packet)
         if 'TCP' in packet:
-            include_logger.debug(f"TCP packet found in packet {pcap_file}")
-            tcp_packets.append(packet)
+            packets['TCP'].append(packet)
         if 'IP' in packet:
-            include_logger.debug(f"IP packet found in packet {pcap_file}")
-            ip_packets.append(packet)
+            packets['IP'].append(packet)
         if 'UDP' in packet:
-            include_logger.debug(f"UDP packet found in packet {pcap_file}")
-            udp_packets.append(packet)
+            packets['UDP'].append(packet)
 
-    include_logger.info(f"DNS packets: {len(dns_packets)}")
-    include_logger.info(f"HTTP packets: {len(http_packets)}")
-    include_logger.info(f"SSL packets: {len(ssl_packets)}")
-    include_logger.info(f"TCP packets: {len(tcp_packets)}")
-    include_logger.info(f"IP packets: {len(ip_packets)}")
-    include_logger.info(f"UDP packets: {len(udp_packets)}")
+    for proto, pkt_list in packets.items():
+        include_logger.info(f"{proto} packets: {len(pkt_list)}")
 
-    open_csv('DNS', ['Filename', 'Protocol', 'Source IP',
-             'Destination IP', 'Query Name', 'Response Flags', 'Time-to-Live'], executable_name, dns_packets)
-
-    open_csv('HTTP', ['Filename', 'Protocol', 'Source IP', 'Destination IP',
-             'Hostname', 'Referrer', 'Cookie', 'User Agent', 'Content Type'], executable_name, http_packets)
-
-    open_csv('SSL', ['Filename', 'Protocol', 'Source IP', 'Destination IP',
-                     'Server Name', 'SSL Version', 'Certificate Expiry'], executable_name, ssl_packets)
-
-    open_csv('TCP', ['Destination Port', 'Packet Size', 'PUSH Bit Set', 
-                     'Out-of-Order Packets'], executable_name, tcp_packets)
-
-    open_csv('IP', ['Destination IP', 'IP Geo-location', 
-                    'IP Autonomous System Number'], executable_name, ip_packets)
-
-    open_csv('UDP', ['Ratio Sent/Received', 'Non-Existent Domain Responses'], executable_name, udp_packets)
+    open_csv('DNS', ['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Query Name', 'Response Flags', 'TTL'], executable_name, packets['DNS'])
+    open_csv('HTTP', ['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Hostname', 'User Agent', 'Content Type'], executable_name, packets['HTTP'])
+    open_csv('SSL', ['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Server Name', 'SSL Version', 'Encrypted Traffic Ratio'], executable_name, packets['SSL'])
+    open_csv('TCP', ['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Destination Port', 'Packet Size', 'PUSH Bit Set'], executable_name, packets['TCP'])
+    open_csv('IP', ['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Geo-location', 'ASN', 'Repeated Connection Attempts'], executable_name, packets['IP'])
+    open_csv('UDP', ['Filename', 'Protocol', 'Source IP', 'Destination IP', 'Ratio Sent/Received'], executable_name, packets['UDP'])
 
 
 def open_csv(protocol, headers, executable_name, packets):
