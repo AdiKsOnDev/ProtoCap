@@ -42,35 +42,40 @@ def capture_traffic(executable_path, output_dir="./data/", timeout=10):
     Return:
         (str): Path to the pcap file in case of success, None otherwise
     """
-    sniffer = AsyncSniffer()
-    sniffer.start()
-    start_time = time.time()
-    logging.debug(f"Started sniffing at {int(start_time)}")
-
-    process = run_executable(executable_path)
-
-    if process == None:
-        return None
-
     try:
-        process.wait(timeout)
-    except subprocess.TimeoutExpired:
-        process.kill()
+        sniffer = AsyncSniffer()
+        sniffer.start()
+        start_time = time.time()
+        logging.debug(f"Started sniffing at {int(start_time)}")
 
-    packets = sniffer.stop()
-    runtime = time.time() - start_time
-    logging.debug(f"Finished sniffing. Runtime is {int(runtime)}")
+        process = run_executable(executable_path)
 
-    exe_name = os.path.basename(executable_path)
-    logging.debug(f"Output Directory is {output_dir}, file name is {
-                  exe_name}_{int(start_time)}.pcap")
+        if process == None:
+            return None
 
-    pcap_path = os.path.join(output_dir, f"{exe_name}_{int(start_time)}.pcap")
-    wrpcap(pcap_path, packets)
+        try:
+            process.wait(timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
 
-    include_logger.info(f"Captured {len(packets)} packets for {exe_name} in {
-                        runtime:.2f} seconds. Saved to {pcap_path}")
-    return pcap_path
+        packets = sniffer.stop()
+        runtime = time.time() - start_time
+        logging.debug(f"Finished sniffing. Runtime is {int(runtime)}")
+
+        exe_name = os.path.basename(executable_path)
+        logging.debug(f"Output Directory is {output_dir}, file name is {
+                      exe_name}_{int(start_time)}.pcap")
+
+        pcap_path = os.path.join(output_dir, f"{exe_name}_{int(start_time)}.pcap")
+        wrpcap(pcap_path, packets)
+
+        include_logger.info(f"Captured {len(packets)} packets for {exe_name} in {
+                            runtime:.2f} seconds. Saved to {pcap_path}")
+        return pcap_path
+    except Exception as e:
+        include_logger.error(f"{e} while sniffing {
+                             executable_path}", exc_info=False)
+        return None
 
 
 def analyze_traffic(pcap_file, executable_name):
